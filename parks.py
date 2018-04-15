@@ -1,5 +1,6 @@
 import numpy as np
 import argparse
+import time
 
 class node():
     def __init__(self,matrix,father):
@@ -61,10 +62,12 @@ def load_board(n):
     return board
 
 if __name__ == "__main__":
+    time_start = time.time()
+    # Execution parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument("--strategy", "-str", type=str, required=True)
-    parser.add_argument("--showstate", "-show", type=str, required=True)
-    parser.add_argument("--sides", "-n", type=str, required=True)
+    parser.add_argument("--strategy", "-str", type=str, required=True)      # dfs or bfs
+    parser.add_argument("--showstate", "-show", type=str, required=True)    # yes or no
+    parser.add_argument("--sides", "-n", type=str, required=True)           # number
     args = parser.parse_args()
     args.showstate = args.showstate.lower()
     args.strategy = args.strategy.lower()
@@ -83,13 +86,11 @@ if __name__ == "__main__":
                 None)
     board = load_board(n)
     print("tablero a resolver:")
-    print(board)    
-
-    #State list
+    print(board)
+    # State list    
     Q = [root]
-
-    # check for shape
-    if(not(board.shape == root.matrix.shape) and root.matrix.shape[0] == n):
+    # Shape verification
+    if(not(board.shape == root.matrix.shape) and root.matrix.shape[0] == n): 
         print("El tablero y la dimension solicitada no corresponden.")
         exit()
 
@@ -99,11 +100,12 @@ if __name__ == "__main__":
         q = Q.pop()
 
         if(is_solution(q.matrix, board,n)):
-            print("Es solucion: ")
+            print("Solucion: ")
             matrix_return = q.matrix.copy()
             for coords in np.argwhere(q.matrix == -1):
                 matrix_return[coords[0],coords[1]] = 0
             print(matrix_return)
+            print("Resuelto en: {0} seg.: ".format(time.time() - time_start))
             exit()
         
         sons = q.generate_sons()
@@ -116,3 +118,4 @@ if __name__ == "__main__":
             # level search strategy
             Q = sons + Q
     print("No hay solucion.")
+    print("Tiempo de calculo: {0} seg.: ".format(time.time() - time_start))
