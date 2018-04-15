@@ -66,7 +66,7 @@ if __name__ == "__main__":
     # Execution parameters
     parser = argparse.ArgumentParser()
     parser.add_argument("--strategy", "-str", type=str, required=True)      # dfs or bfs
-    parser.add_argument("--showstate", "-show", type=str, required=True)    # yes or no / y or n
+    parser.add_argument("--showstate", "-show", type=str, required=True)    # qlist or all or n
     parser.add_argument("--sides", "-n", type=str, required=True)           # number
     args = parser.parse_args()
     args.showstate = args.showstate.lower()
@@ -74,11 +74,8 @@ if __name__ == "__main__":
     print("Estrategia     : "+args.strategy)
     print("Mostrar estado : "+args.showstate)
     print("n lados        : "+args.sides)
-    if(args.showstate == 'yes' or args.showstate == 'y'):
-        show = True
-    elif(args.showstate == 'no' or args.showstate == 'n'):
-        show = False
-
+    if(args.showstate not in ['qlist','all','n']):
+        exit()
     if(args.strategy not in ['bfs','dfs']):
         exit()
     n = int(args.sides)
@@ -94,7 +91,15 @@ if __name__ == "__main__":
         exit()
 
     while(len(Q)):
-        if(show): print("Largo de Q: "+str(len(Q)))
+        if(args.showstate in ['all','qlist']): print("Largo de Q: "+str(len(Q)))
+        if(args.showstate == 'all' and len(Q) > 0):
+            for i in range(0,len(Q)):
+                print("----- ("+str(i+1)+")")
+                matrix_return = Q[i].matrix.copy()
+                for coords in np.argwhere(matrix_return == -1):
+                    matrix_return[coords[0],coords[1]] = 0
+                print('\n'.join([''.join(['{:3}'.format(item) for item in row]) for row in matrix_return]))
+
         q = Q.pop()
         if(is_solution(q.matrix, board,n)):
             print("\n")
@@ -106,21 +111,17 @@ if __name__ == "__main__":
             chain.reverse()
 
             print("Cadena solucion (de padre a hijo)")
+            count = 1
             for cell in chain:
                 matrix_return = cell.matrix.copy()
                 for coords in np.argwhere(cell.matrix == -1):
                     matrix_return[coords[0],coords[1]] = 0
-                print("-----")
+                print("----- Nivel: "+str(count))
                 print('\n'.join([''.join(['{:3}'.format(item) for item in row]) for row in matrix_return]))
+                count +=1
             print("Es solucion del tablero.\nResuelto en: {0} seg.: ".format(time.time() - time_start))
             exit()        
         sons = q.generate_sons()    # generate sons
-        if(show and len(Q) > 0):
-            print("Nodos hijos:")
-            for i in [0,len(Q)]:
-                print("-----")
-                print('\n'.join([''.join(['{:3}'.format(item) for item in row]) for row in Q[i].matrix]))
-                
         sons.reverse()              # swap childrens place
 
         if(args.strategy == 'dfs'):
